@@ -1,0 +1,13 @@
+# Terraform
+terraform.tfstate
+terraform.tfstate.backup
+.terraform.lock.hcl
+.terraform/
+
+# Python
+__pycache__/
+*.pyc
+
+# Other
+.DS_Store
+*.zip
