@@ -1,7 +1,7 @@
 resource "aws_dynamodb_table" "environments" {
-  name           = "${var.project_name}-environments"
-  billing_mode   = "PAY_PER_REQUEST"
-  hash_key       = "id"
+  name         = "${var.project_name}-environments"
+  billing_mode = "PAY_PER_REQUEST"
+  hash_key     = "id"
 
   attribute {
     name = "id"
@@ -110,14 +110,22 @@ resource "aws_iam_role_policy_attachment" "lambda_permissions" {
   policy_arn = aws_iam_policy.lambda_permissions.arn
 }
 
+# Create zip file
+data "archive_file" "lambda_create_environment" {
+  type = "zip"
+
+  source_dir  = "${path.cwd}/../src/lambda_create_environment"
+  output_path = "${path.root}/../src/lambda_create_environment.zip"
+}
+
 # Create Environment Lambda
 resource "aws_lambda_function" "create_environment" {
   function_name    = "${var.project_name}-create-environment"
   role             = aws_iam_role.lambda_exec.arn
   handler          = "main.handler"
   runtime          = "python3.8"
-  filename         = "${path.root}/../src/lambda_create_environment/lambda_create_environment.zip"
-  source_code_hash = filebase64sha256("${path.root}/../src/lambda_create_environment/lambda_create_environment.zip")
+  filename         = data.archive_file.lambda_create_environment.output_path
+  source_code_hash = data.archive_file.lambda_create_environment.output_base64sha256
   timeout          = 300
 
   environment {
@@ -128,14 +136,22 @@ resource "aws_lambda_function" "create_environment" {
   }
 }
 
+# Create zip file
+data "archive_file" "lambda_get_environments" {
+  type = "zip"
+
+  source_dir  = "${path.cwd}/../src/lambda_get_environments"
+  output_path = "${path.root}/../src/lambda_get_environments.zip"
+}
+
 # Get Environments Lambda
 resource "aws_lambda_function" "get_environments" {
   function_name    = "${var.project_name}-get-environments"
   role             = aws_iam_role.lambda_exec.arn
   handler          = "main.handler"
   runtime          = "python3.8"
-  filename         = "${path.root}/../src/lambda_get_environments/lambda_get_environments.zip"
-  source_code_hash = filebase64sha256("${path.root}/../src/lambda_get_environments/lambda_get_environments.zip")
+  filename         = data.archive_file.lambda_get_environments.output_path
+  source_code_hash = data.archive_file.lambda_get_environments.output_base64sha256
 
   environment {
     variables = {
@@ -144,14 +160,22 @@ resource "aws_lambda_function" "get_environments" {
   }
 }
 
+# Create zip file
+data "archive_file" "lambda_take_down_environment" {
+  type = "zip"
+
+  source_dir  = "${path.cwd}/../src/lambda_take_down_environment"
+  output_path = "${path.root}/../src/lambda_take_down_environment.zip"
+}
+
 # Take Down Environment Lambda
 resource "aws_lambda_function" "take_down_environment" {
   function_name    = "${var.project_name}-take-down-environment"
   role             = aws_iam_role.lambda_exec.arn
   handler          = "main.handler"
   runtime          = "python3.8"
-  filename         = "${path.root}/../src/lambda_take_down_environment/lambda_take_down_environment.zip"
-  source_code_hash = filebase64sha256("${path.root}/../src/lambda_take_down_environment/lambda_take_down_environment.zip")
+  filename         = data.archive_file.lambda_take_down_environment.output_path
+  source_code_hash = data.archive_file.lambda_take_down_environment.output_base64sha256
 
   environment {
     variables = {
